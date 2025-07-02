@@ -1,25 +1,16 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+// api/send-email.js
 import { Resend } from 'resend';
-
-dotenv.config();
-
-const app = express();
-app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['POST'],
-  allowedHeaders: ['Content-Type'],
-}));
-app.use(express.json());
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-app.post('/api/send-email', async (req, res) => {
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const { name, email, message } = req.body;
 
   try {
-    // Send email to YOU
     await resend.emails.send({
       from: 'Portfolio Contact <onboarding@resend.dev>',
       to: 'kareem99710@gmail.com',
@@ -34,13 +25,8 @@ app.post('/api/send-email', async (req, res) => {
     });
 
     res.status(200).json({ success: true });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, error: 'Failed to send email' });
   }
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-});
+}
