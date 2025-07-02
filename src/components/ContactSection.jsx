@@ -8,17 +8,41 @@ const {toast} = useToast();
 const[isSubmitting, setIsSubmitting] = useState(false);
     
     
-const handleSubmit = (e) =>{
+const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() =>{
-         toast({
-           title: "Message Sent",
-           description: "Thanks for reaching out!",
-         });
+
+    const formData = new FormData(e.target);
+    const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: formData.get('message'),
+    };
+
+    try {
+        const res = await fetch('http://localhost:5000/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        });
+
+
+        if (!res.ok) throw new Error('Failed to send');
+
+        toast({
+            title: "Message Sent",
+            description: "Thanks for reaching out!",
+        });
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "There was a problem sending your message.",
+        });
+    }
+
     setIsSubmitting(false);
-    }, 1500);
 };
+
 
     return <section id = "contact" className="py-24 px-4 relative bg-secondary/30">
         <div className="container max-w-5xl mx-auto">
@@ -86,10 +110,10 @@ const handleSubmit = (e) =>{
                     </div>
                 </div>
 
-                <div className="bg-card p-8 rounded-lg shadow-xs" onSubmit={handleSubmit}>
+                <div className="bg-card p-8 rounded-lg shadow-xs" >
                     <h3 className="text-2xl font-semibold mb-6"> Send a Message </h3>
 
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
                        <div>
                          <label htmlFor="name" className="block text-sm font-medium mb-2">Your Name</label>
                          <input 
